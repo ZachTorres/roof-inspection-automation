@@ -159,9 +159,9 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
             let description = randomDesc.replace('{location}', randomLocation);
 
             // Handle special replacements for general category
-            if (category === 'general' && template.ages) {
+            if (category === 'general' && 'ages' in template && 'lives' in template) {
               const randomAge = template.ages[Math.floor(Math.random() * template.ages.length)];
-              const randomLife = template.lives![Math.floor(Math.random() * template.lives!.length)];
+              const randomLife = template.lives[Math.floor(Math.random() * template.lives.length)];
               description = description.replace('{age}', randomAge).replace('{life}', randomLife);
             }
 
@@ -182,8 +182,8 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
         const template = damageTemplates.general[Math.floor(Math.random() * damageTemplates.general.length)];
         const randomDesc = template.descriptions[Math.floor(Math.random() * template.descriptions.length)];
         const randomLocation = template.locations[Math.floor(Math.random() * template.locations.length)];
-        const randomAge = template.ages![Math.floor(Math.random() * template.ages!.length)];
-        const randomLife = template.lives![Math.floor(Math.random() * template.lives!.length)];
+        const randomAge = template.ages[Math.floor(Math.random() * template.ages.length)];
+        const randomLife = template.lives[Math.floor(Math.random() * template.lives.length)];
 
         analyzedDamage.push({
           id: (idCounter++).toString(),
