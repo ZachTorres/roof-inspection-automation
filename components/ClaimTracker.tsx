@@ -284,32 +284,6 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
         </button>
       </div>
 
-      {/* Time Savings Summary */}
-      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6 mb-8">
-        <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
-          Weekly Time Savings with Automation
-        </h3>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-gray-600 dark:text-gray-400">Manual report creation</p>
-            <p className="font-semibold text-gray-900 dark:text-white">2-3 hours/inspection</p>
-          </div>
-          <div>
-            <p className="text-gray-600 dark:text-gray-400">Automated process</p>
-            <p className="font-semibold text-gray-900 dark:text-white">5 minutes/inspection</p>
-          </div>
-          <div>
-            <p className="text-gray-600 dark:text-gray-400">Follow-up tracking</p>
-            <p className="font-semibold text-gray-900 dark:text-white">1 hour → 10 minutes</p>
-          </div>
-          <div>
-            <p className="text-gray-600 dark:text-gray-400">Weekly savings (3-4 inspections)</p>
-            <p className="font-semibold text-green-600 dark:text-green-400">8-12 hours saved</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
       <div className="flex justify-between">
         <button
           onClick={onBack}

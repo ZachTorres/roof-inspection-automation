@@ -232,29 +232,6 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
             </ul>
           </div>
 
-          {/* Time Savings */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-6">
-            <div className="flex items-start">
-              <svg className="w-12 h-12 text-blue-600 dark:text-blue-400 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Estimated Time Savings
-                </h4>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Traditional manual report creation: <strong>2-3 hours</strong>
-                </p>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Automated generation: <strong>Under 5 minutes</strong>
-                </p>
-                <p className="text-green-600 dark:text-green-400 font-semibold mt-2">
-                  Time saved: 2+ hours per inspection!
-                </p>
-              </div>
-            </div>
-          </div>
-
           {/* Generate Button */}
           <button
             onClick={handleGenerate}

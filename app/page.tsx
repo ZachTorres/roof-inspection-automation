@@ -16,10 +16,10 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Roof Inspection Report Automation
+            United Roofing Inspection Reports
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
-            Save 5-10 hours weekly on insurance claim documentation
+            Professional insurance claim documentation
           </p>
         </div>
 
