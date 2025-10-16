@@ -106,27 +106,27 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
   );
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+    <div className="bg-white dark:bg-uc-navy-light rounded-lg shadow-xl p-8 border border-uc-blue/10">
+      <h2 className="text-2xl font-bold mb-6 text-uc-navy dark:text-white">
         Step 4: Claim Tracking & Follow-ups
       </h2>
 
       {/* Claim Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Customer</p>
-          <p className="font-semibold text-gray-900 dark:text-white">
+        <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-4 border border-uc-blue/20">
+          <p className="text-sm text-uc-navy/70 dark:text-slate-400 mb-1">Customer</p>
+          <p className="font-semibold text-uc-navy dark:text-white">
             {inspection.customerInfo.name}
           </p>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Claim Number</p>
-          <p className="font-semibold text-gray-900 dark:text-white">
+        <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-4 border border-uc-blue/20">
+          <p className="text-sm text-uc-navy/70 dark:text-slate-400 mb-1">Claim Number</p>
+          <p className="font-semibold text-uc-navy dark:text-white">
             {inspection.customerInfo.claimNumber || 'N/A'}
           </p>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Amount</p>
+        <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-4 border border-uc-blue/20">
+          <p className="text-sm text-uc-navy/70 dark:text-slate-400 mb-1">Total Amount</p>
           <p className="font-semibold text-green-600 dark:text-green-400">
             ${inspection.analysis.totalEstimate.toLocaleString()}
           </p>
@@ -135,7 +135,7 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
 
       {/* Claim Status */}
       <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+        <h3 className="text-xl font-semibold mb-4 text-uc-navy dark:text-white">
           Claim Status
         </h3>
         <div className="flex items-center gap-4">
@@ -149,7 +149,7 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
             <option value="approved">Approved</option>
             <option value="denied">Denied</option>
           </select>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-uc-navy/70 dark:text-slate-400">
             Updated: {format(new Date(), 'MMM dd, yyyy')}
           </span>
         </div>
@@ -157,34 +157,34 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
 
       {/* Follow-up Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
-          <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+        <div className="bg-blue-50 dark:bg-uc-blue/10 rounded-lg p-4 text-center border border-uc-blue/20">
+          <p className="text-3xl font-bold text-uc-blue dark:text-uc-blue-light">
             {pendingFollowUps.length}
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Pending Follow-ups</p>
+          <p className="text-sm text-uc-navy/70 dark:text-slate-400">Pending Follow-ups</p>
         </div>
-        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 text-center border border-red-300 dark:border-red-800">
           <p className="text-3xl font-bold text-red-600 dark:text-red-400">
             {overdueFollowUps.length}
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Overdue Tasks</p>
+          <p className="text-sm text-uc-navy/70 dark:text-slate-400">Overdue Tasks</p>
         </div>
-        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 text-center border border-green-300 dark:border-green-800">
           <p className="text-3xl font-bold text-green-600 dark:text-green-400">
             {followUps.filter((f) => f.status === 'completed').length}
           </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
+          <p className="text-sm text-uc-navy/70 dark:text-slate-400">Completed</p>
         </div>
       </div>
 
       {/* Follow-up List */}
       <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
+        <h3 className="text-xl font-semibold mb-4 text-uc-navy dark:text-white">
           Follow-up Schedule
         </h3>
 
         {followUps.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-uc-navy/60 dark:text-slate-400">
             No follow-ups scheduled yet
           </div>
         ) : (
@@ -205,14 +205,14 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
                           type="checkbox"
                           checked={followUp.status === 'completed'}
                           onChange={() => toggleFollowUpStatus(followUp.id)}
-                          className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                          className="mt-1 w-5 h-5 text-uc-blue rounded focus:ring-2 focus:ring-uc-blue"
                         />
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="px-2 py-1 text-xs font-semibold rounded bg-white dark:bg-gray-800">
+                            <span className="px-2 py-1 text-xs font-semibold rounded bg-white dark:bg-uc-navy-dark border border-uc-blue/30">
                               {followUp.type.charAt(0).toUpperCase() + followUp.type.slice(1)}
                             </span>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                            <span className="text-sm text-uc-navy/70 dark:text-slate-400">
                               Due: {format(new Date(followUp.dueDate), 'MMM dd, yyyy')}
                             </span>
                             {followUp.status === 'pending' && daysUntilDue < 0 && (
@@ -226,7 +226,7 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
                               </span>
                             )}
                           </div>
-                          <p className={`text-gray-700 dark:text-gray-300 ${followUp.status === 'completed' ? 'line-through opacity-60' : ''}`}>
+                          <p className={`text-uc-navy dark:text-slate-300 ${followUp.status === 'completed' ? 'line-through opacity-60' : ''}`}>
                             {followUp.notes}
                           </p>
                         </div>
@@ -248,15 +248,15 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
       </div>
 
       {/* Add New Follow-up */}
-      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-8">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+      <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-6 mb-8 border border-uc-blue/20">
+        <h3 className="text-lg font-semibold mb-4 text-uc-navy dark:text-white">
           Schedule New Follow-up
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <select
             value={newFollowUp.type}
             onChange={(e) => setNewFollowUp({ ...newFollowUp, type: e.target.value as any })}
-            className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy-dark dark:border-uc-blue/30 dark:text-white"
           >
             <option value="adjuster">Insurance Adjuster</option>
             <option value="mortgage">Mortgage Company</option>
@@ -266,7 +266,7 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
             type="date"
             value={newFollowUp.dueDate}
             onChange={(e) => setNewFollowUp({ ...newFollowUp, dueDate: e.target.value })}
-            className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy-dark dark:border-uc-blue/30 dark:text-white"
           />
         </div>
         <textarea
@@ -274,11 +274,11 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
           value={newFollowUp.notes}
           onChange={(e) => setNewFollowUp({ ...newFollowUp, notes: e.target.value })}
           rows={2}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-4 dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+          className="w-full px-4 py-2 border border-slate-300 rounded-lg mb-4 focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy-dark dark:border-uc-blue/30 dark:text-white"
         />
         <button
           onClick={addFollowUp}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+          className="w-full bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-lg hover:shadow-xl"
         >
           Add Follow-up Task
         </button>
@@ -287,13 +287,13 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
       <div className="flex justify-between">
         <button
           onClick={onBack}
-          className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-8 py-3 rounded-lg transition-colors"
+          className="bg-slate-300 hover:bg-slate-400 text-uc-navy font-semibold px-8 py-3 rounded-lg transition-colors"
         >
           Back
         </button>
         <button
           onClick={onNewInspection}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+          className="bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
         >
           New Inspection
         </button>

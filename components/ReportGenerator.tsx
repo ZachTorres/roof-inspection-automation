@@ -186,19 +186,19 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+    <div className="bg-white dark:bg-uc-navy-light rounded-lg shadow-xl p-8 border border-uc-blue/10">
+      <h2 className="text-2xl font-bold mb-6 text-uc-navy dark:text-white">
         Step 3: Generate Professional Report
       </h2>
 
       {!reportGenerated ? (
         <>
           {/* Report Preview */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+          <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-6 mb-6 border border-uc-blue/20">
+            <h3 className="text-lg font-semibold mb-4 text-uc-navy dark:text-white">
               Report Contents
             </h3>
-            <ul className="space-y-2 text-gray-700 dark:text-gray-300">
+            <ul className="space-y-2 text-uc-navy dark:text-slate-300">
               <li className="flex items-center">
                 <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -236,7 +236,7 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-4 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-8 py-4 rounded-lg transition-colors shadow-lg hover:shadow-xl disabled:bg-slate-400 disabled:cursor-not-allowed"
           >
             {generating ? (
               <span className="flex items-center justify-center">
@@ -254,7 +254,7 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
           <div className="flex justify-between mt-6">
             <button
               onClick={onBack}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-8 py-3 rounded-lg transition-colors"
+              className="bg-slate-300 hover:bg-slate-400 text-uc-navy font-semibold px-8 py-3 rounded-lg transition-colors"
             >
               Back
             </button>
@@ -267,17 +267,17 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
             <svg className="w-20 h-20 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-2xl font-bold text-uc-navy dark:text-white mb-2">
               Report Generated Successfully!
             </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-uc-navy/70 dark:text-slate-400 mb-6">
               Your professional inspection report is ready for download
             </p>
 
             <div className="flex justify-center gap-4 mb-8">
               <button
                 onClick={downloadPDF}
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+                className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
               >
                 Download PDF Report
               </button>
@@ -288,13 +288,13 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
           <div className="flex justify-between">
             <button
               onClick={onBack}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-8 py-3 rounded-lg transition-colors"
+              className="bg-slate-300 hover:bg-slate-400 text-uc-navy font-semibold px-8 py-3 rounded-lg transition-colors"
             >
               Back
             </button>
             <button
               onClick={() => onNext({})}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+              className="bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
             >
               Next: Track Claim
             </button>

@@ -70,14 +70,14 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+    <div className="bg-white dark:bg-uc-navy-light rounded-lg shadow-xl p-8 border border-uc-blue/10">
+      <h2 className="text-2xl font-bold mb-6 text-uc-navy dark:text-white">
         Step 1: Upload Inspection Photos
       </h2>
 
       {/* Customer Information */}
       <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+        <h3 className="text-xl font-semibold mb-4 text-uc-navy dark:text-slate-200">
           Customer Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -88,7 +88,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             onChange={(e) =>
               setCustomerInfo({ ...customerInfo, name: e.target.value })
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
           />
           <input
             type="text"
@@ -97,7 +97,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             onChange={(e) =>
               setCustomerInfo({ ...customerInfo, address: e.target.value })
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
           />
           <input
             type="tel"
@@ -106,7 +106,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             onChange={(e) =>
               setCustomerInfo({ ...customerInfo, phone: e.target.value })
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
           />
           <input
             type="email"
@@ -115,7 +115,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             onChange={(e) =>
               setCustomerInfo({ ...customerInfo, email: e.target.value })
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
           />
           <input
             type="date"
@@ -123,7 +123,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             onChange={(e) =>
               setCustomerInfo({ ...customerInfo, inspectionDate: e.target.value })
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
           />
           <input
             type="text"
@@ -132,7 +132,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             onChange={(e) =>
               setCustomerInfo({ ...customerInfo, claimNumber: e.target.value })
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
           />
         </div>
       </div>
@@ -142,8 +142,8 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
         {...getRootProps()}
         className={`border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
           isDragActive
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            : 'border-gray-300 hover:border-gray-400 dark:border-gray-600'
+            ? 'border-uc-blue bg-blue-50 dark:bg-uc-blue/10'
+            : 'border-slate-300 hover:border-uc-blue dark:border-uc-blue/30 dark:hover:border-uc-blue'
         }`}
       >
         <input {...getInputProps()} />
@@ -160,12 +160,12 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             strokeLinejoin="round"
           />
         </svg>
-        <p className="mt-4 text-lg text-gray-600 dark:text-gray-300">
+        <p className="mt-4 text-lg text-uc-navy dark:text-slate-300">
           {isDragActive
             ? 'Drop photos here...'
             : 'Drag & drop inspection photos, or click to select'}
         </p>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-2 text-sm text-uc-navy/60 dark:text-slate-400">
           Supports: JPG, PNG, WEBP
         </p>
       </div>
@@ -173,7 +173,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
       {/* Photo Gallery */}
       {photos.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+          <h3 className="text-xl font-semibold mb-4 text-uc-navy dark:text-slate-200">
             Uploaded Photos ({photos.length})
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -205,7 +205,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
                 <select
                   value={photo.category}
                   onChange={(e) => updatePhotoCategory(index, e.target.value)}
-                  className="mt-2 w-full px-2 py-1 text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  className="mt-2 w-full px-2 py-1 text-sm border border-slate-300 rounded dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white focus:ring-2 focus:ring-uc-blue"
                 >
                   <option value="general">General</option>
                   <option value="shingles">Shingles</option>
@@ -225,7 +225,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
       <div className="mt-8 flex justify-end">
         <button
           onClick={handleSubmit}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+          className="bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
         >
           Next: Analyze Damage
         </button>

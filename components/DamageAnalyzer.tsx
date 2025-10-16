@@ -247,40 +247,40 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+    <div className="bg-white dark:bg-uc-navy-light rounded-lg shadow-xl p-8 border border-uc-blue/10">
+      <h2 className="text-2xl font-bold mb-6 text-uc-navy dark:text-white">
         Step 2: Damage Analysis
       </h2>
 
       {analyzing ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-gray-300 border-t-blue-600 mb-4"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-slate-300 border-t-uc-blue mb-4"></div>
+          <p className="text-lg text-uc-navy dark:text-slate-300">
             Analyzing inspection photos...
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          <p className="text-sm text-uc-navy/60 dark:text-slate-400 mt-2">
             Detecting damage patterns, estimating costs, and categorizing findings
           </p>
         </div>
       ) : (
         <>
           {/* Summary Card */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 mb-6">
+          <div className="bg-blue-50 dark:bg-uc-blue/10 rounded-lg p-6 mb-6 border border-uc-blue/20">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Findings</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                <p className="text-sm text-uc-navy/70 dark:text-slate-400">Total Findings</p>
+                <p className="text-2xl font-bold text-uc-navy dark:text-white">
                   {damageItems.length}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Estimated Cost</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                <p className="text-sm text-uc-navy/70 dark:text-slate-400">Estimated Cost</p>
+                <p className="text-2xl font-bold text-uc-blue dark:text-uc-blue-light">
                   ${totalEstimate.toLocaleString()}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Severity Breakdown</p>
+                <p className="text-sm text-uc-navy/70 dark:text-slate-400">Severity Breakdown</p>
                 <div className="flex gap-2 mt-1">
                   <span className="px-2 py-1 text-xs bg-yellow-200 text-yellow-800 rounded">
                     {damageItems.filter((i) => i.severity === 'minor').length} Minor
@@ -301,10 +301,10 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
             {damageItems.map((item, index) => (
               <div
                 key={item.id}
-                className="border border-gray-300 dark:border-gray-600 rounded-lg p-4"
+                className="border border-slate-300 dark:border-uc-blue/30 rounded-lg p-4 bg-white/50 dark:bg-uc-navy/50"
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                  <h3 className="font-semibold text-uc-navy dark:text-white">
                     Finding #{index + 1}
                   </h3>
                   <button
@@ -334,14 +334,14 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                     onChange={(e) =>
                       updateDamageItem(item.id, 'category', e.target.value)
                     }
-                    className="px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
                   />
                   <select
                     value={item.severity}
                     onChange={(e) =>
                       updateDamageItem(item.id, 'severity', e.target.value)
                     }
-                    className="px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
                   >
                     <option value="minor">Minor</option>
                     <option value="moderate">Moderate</option>
@@ -354,7 +354,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                     onChange={(e) =>
                       updateDamageItem(item.id, 'location', e.target.value)
                     }
-                    className="px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
                   />
                   <input
                     type="number"
@@ -363,7 +363,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                     onChange={(e) =>
                       updateDamageItem(item.id, 'estimatedCost', parseFloat(e.target.value) || 0)
                     }
-                    className="px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
                   />
                   <textarea
                     placeholder="Description"
@@ -372,7 +372,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                       updateDamageItem(item.id, 'description', e.target.value)
                     }
                     rows={3}
-                    className="col-span-2 px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="col-span-2 px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
                   />
                 </div>
               </div>
@@ -382,7 +382,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
           {/* Add Item Button */}
           <button
             onClick={addDamageItem}
-            className="w-full py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors"
+            className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-uc-blue/30 rounded-lg text-uc-navy dark:text-slate-400 hover:border-uc-blue hover:text-uc-blue transition-colors"
           >
             + Add Additional Finding
           </button>
@@ -391,13 +391,13 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
           <div className="flex justify-between mt-8">
             <button
               onClick={onBack}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-8 py-3 rounded-lg transition-colors"
+              className="bg-slate-300 hover:bg-slate-400 text-uc-navy font-semibold px-8 py-3 rounded-lg transition-colors"
             >
               Back
             </button>
             <button
               onClick={handleNext}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
+              className="bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
             >
               Next: Generate Report
             </button>

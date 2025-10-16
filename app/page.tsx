@@ -11,15 +11,18 @@ export default function Home() {
   const [inspectionData, setInspectionData] = useState<any>(null);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-uc-navy-dark dark:to-uc-navy">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-uc-navy dark:text-white mb-4">
             United Roofing Inspection Reports
           </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
+          <p className="text-lg text-uc-navy/70 dark:text-slate-300">
             Professional insurance claim documentation
+          </p>
+          <p className="text-sm text-uc-blue mt-2 font-semibold">
+            Experience the Royal Treatment
           </p>
         </div>
 
@@ -36,13 +39,13 @@ export default function Home() {
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 ${
                     currentStep >= step.num
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-300 text-gray-600'
+                      ? 'bg-uc-blue text-white shadow-lg'
+                      : 'bg-slate-300 text-slate-600 dark:bg-uc-navy-light dark:text-slate-400'
                   }`}
                 >
                   {step.num}
                 </div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="text-sm text-uc-navy dark:text-slate-300">
                   {step.label}
                 </span>
               </div>
