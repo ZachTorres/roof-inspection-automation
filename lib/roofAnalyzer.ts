@@ -196,9 +196,9 @@ function analyzeImageFeatures(canvas: HTMLCanvasElement): {
 
   // Determine overall condition based on multiple factors
   let overallCondition: 'good' | 'fair' | 'poor';
-  if (darknessRatio > 0.3 || avgBrightness < 70) {
+  if (darknessRatio > 0.25 || avgBrightness < 80) {
     overallCondition = 'poor';
-  } else if (darknessRatio > 0.15 || avgBrightness < 100 || contrast < 25) {
+  } else if (darknessRatio > 0.10 || avgBrightness < 120 || contrast < 30 || hasRedAreas) {
     overallCondition = 'fair';
   } else {
     overallCondition = 'good';
@@ -306,8 +306,8 @@ function analyzeShingleDamage(predictions: any[], features: any, edgeDensity: nu
   const findings: Partial<DamageItem>[] = [];
 
   // Check for dark spots (missing shingles) - more aggressive detection
-  if (features.hasDarkSpots || features.darkness > 0.15) {
-    const severity = features.darkness > 0.25 ? 'severe' : features.darkness > 0.18 ? 'moderate' : 'minor';
+  if (features.hasDarkSpots || features.darkness > 0.12) {
+    const severity = features.darkness > 0.25 ? 'severe' : features.darkness > 0.15 ? 'moderate' : 'minor';
     const costRange = severity === 'severe' ? costEstimates.severe_damage :
                       severity === 'moderate' ? costEstimates.damaged_area :
                       costEstimates.missing_shingles;
@@ -322,16 +322,29 @@ function analyzeShingleDamage(predictions: any[], features: any, edgeDensity: nu
     });
   }
 
+  // Detect moss/algae/discoloration (weathering)
+  if (features.hasRedAreas || features.contrast < 35) {
+    const cost = Math.floor(Math.random() * (costEstimates.weathering.max - costEstimates.weathering.min) + costEstimates.weathering.min);
+
+    findings.push({
+      category: 'Weathering & Deterioration',
+      severity: 'minor',
+      description: `Visual analysis detected ${features.hasRedAreas ? 'discoloration and rust-colored areas' : 'low contrast patterns'} indicating moss, algae growth, or material weathering. While primarily cosmetic, organic growth can accelerate shingle degradation if left untreated. Professional cleaning and treatment recommended.`,
+      estimatedCost: cost,
+      location: 'Roof surface',
+    });
+  }
+
   // Check for excessive edges (cracking/curling) - improved severity assessment
-  if (edgeDensity > 15) {
-    const severity = edgeDensity > 25 ? 'moderate' : 'minor';
+  if (edgeDensity > 12) {
+    const severity = edgeDensity > 20 ? 'moderate' : 'minor';
     const costRange = severity === 'moderate' ? costEstimates.damaged_area : costEstimates.minor_wear;
     const cost = Math.floor(Math.random() * (costRange.max - costRange.min) + costRange.min);
 
     findings.push({
       category: 'Shingle Deterioration',
       severity,
-      description: `Computer vision analysis detected ${edgeDensity > 25 ? 'extensive' : 'elevated'} edge patterns consistent with shingle cracking or curling. Pattern density suggests ${edgeDensity > 25 ? 'advanced' : 'moderate'} thermal cycling and UV exposure effects. ${edgeDensity > 25 ? 'Repair or replacement assessment recommended.' : 'Monitor for progression and consider preventive repairs.'}`,
+      description: `Computer vision analysis detected ${edgeDensity > 20 ? 'extensive' : 'elevated'} edge patterns consistent with shingle cracking or curling. Pattern density suggests ${edgeDensity > 20 ? 'advanced' : 'moderate'} thermal cycling and UV exposure effects. ${edgeDensity > 20 ? 'Repair or replacement assessment recommended.' : 'Monitor for progression and consider preventive repairs.'}`,
       estimatedCost: cost,
       location: 'Multiple sections',
     });
@@ -339,7 +352,7 @@ function analyzeShingleDamage(predictions: any[], features: any, edgeDensity: nu
 
   // Poor overall condition with better severity assessment
   if (features.overallCondition === 'poor' && findings.length === 0) {
-    const severity = features.darkness > 0.3 || features.brightness < 60 ? 'severe' : 'moderate';
+    const severity = features.darkness > 0.3 || features.brightness < 70 ? 'severe' : 'moderate';
     const costRange = severity === 'severe' ? costEstimates.full_replacement_large : costEstimates.damaged_area;
     const cost = Math.floor(Math.random() * (costRange.max - costRange.min) + costRange.min);
 
@@ -349,6 +362,19 @@ function analyzeShingleDamage(predictions: any[], features: any, edgeDensity: nu
       description: `Overall roof surface analysis indicates ${severity === 'severe' ? 'severe' : 'moderate'} wear and deterioration. Visual indicators suggest ${severity === 'severe' ? 'critical age-related degradation requiring immediate professional assessment. Full roof replacement recommended (typical cost: $12,000-$28,000+ depending on roof size and materials).' : 'age-related degradation requiring professional assessment for repair vs. replacement decision.'}`,
       estimatedCost: cost,
       location: 'Overall roof surface',
+    });
+  }
+
+  // Fair condition - add assessment
+  if (features.overallCondition === 'fair' && findings.length === 0) {
+    const cost = Math.floor(Math.random() * (costEstimates.minor_wear.max - costEstimates.minor_wear.min) + costEstimates.minor_wear.min);
+
+    findings.push({
+      category: 'Roof Assessment',
+      severity: 'minor',
+      description: 'Visual inspection reveals fair overall condition with signs of moderate wear. Roof shows age-appropriate deterioration but no critical issues detected. Regular monitoring and maintenance recommended to extend serviceable life.',
+      estimatedCost: cost,
+      location: 'Overall',
     });
   }
 
@@ -453,7 +479,7 @@ function analyzeGeneral(features: any, edgeDensity: number): Partial<DamageItem>
     estimatedAge = '12-18';
     remainingLife = '5-10';
     severity = 'minor';
-    costEstimate = 800;
+    costEstimate = Math.floor(Math.random() * (costEstimates.minor_wear.max - costEstimates.minor_wear.min) + costEstimates.minor_wear.min);
   } else {
     estimatedAge = '5-12';
     remainingLife = '10-15';
