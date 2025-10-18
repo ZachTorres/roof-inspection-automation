@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { analyzeRoofPhotos } from '@/lib/roofAnalyzer';
 
 interface DamageAnalyzerProps {
   photos: any[];
@@ -128,88 +129,49 @@ const damageTemplates = {
 export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyzerProps) {
   const [analyzing, setAnalyzing] = useState(true);
   const [damageItems, setDamageItems] = useState<DamageItem[]>([]);
+  const [analysisProgress, setAnalysisProgress] = useState({ current: 0, total: 0 });
+  const [analysisStatus, setAnalysisStatus] = useState('Initializing AI models...');
 
   useEffect(() => {
-    // More realistic AI simulation with varied results
-    setTimeout(() => {
-      const analyzedDamage: DamageItem[] = [];
+    async function runAnalysis() {
+      try {
+        setAnalysisStatus('Loading AI models (first time may take 30-60 seconds)...');
+        setAnalysisProgress({ current: 0, total: photos.length });
 
-      // Count photos by category
-      const categories = photos.reduce((acc: any, photo: any) => {
-        acc[photo.category] = (acc[photo.category] || 0) + 1;
-        return acc;
-      }, {});
+        // Prepare photos for analysis
+        const photosForAnalysis = photos.map(photo => ({
+          file: photo.file,
+          category: photo.category,
+        }));
 
-      let idCounter = 1;
-
-      // Generate varied findings based on uploaded photo categories
-      Object.entries(categories).forEach(([category, count]: [string, any]) => {
-        const templates = damageTemplates[category as keyof typeof damageTemplates];
-
-        if (templates && templates.length > 0) {
-          // Pick random templates based on number of photos
-          const numFindings = Math.min(count, Math.ceil(count / 2) + 1);
-
-          for (let i = 0; i < numFindings && i < templates.length; i++) {
-            const template = templates[i % templates.length];
-            const randomDesc = template.descriptions[Math.floor(Math.random() * template.descriptions.length)];
-            const randomCost = template.costs[Math.floor(Math.random() * template.costs.length)];
-            const randomLocation = template.locations[Math.floor(Math.random() * template.locations.length)];
-
-            let description = randomDesc.replace('{location}', randomLocation);
-
-            // Handle special replacements for general category
-            if (category === 'general' && 'ages' in template && 'lives' in template) {
-              const randomAge = template.ages[Math.floor(Math.random() * template.ages.length)];
-              const randomLife = template.lives[Math.floor(Math.random() * template.lives.length)];
-              description = description.replace('{age}', randomAge).replace('{life}', randomLife);
-            }
-
-            analyzedDamage.push({
-              id: (idCounter++).toString(),
-              category: template.category,
-              severity: template.severity,
-              description,
-              estimatedCost: randomCost,
-              location: randomLocation.charAt(0).toUpperCase() + randomLocation.slice(1),
-            });
+        // Run AI analysis with progress tracking
+        const results = await analyzeRoofPhotos(
+          photosForAnalysis,
+          (current, total) => {
+            setAnalysisProgress({ current, total });
+            setAnalysisStatus(`Analyzing photo ${current} of ${total}...`);
           }
-        }
-      });
+        );
 
-      // Always add a general assessment if we have photos
-      if (photos.length > 0 && !categories.general) {
-        const template = damageTemplates.general[Math.floor(Math.random() * damageTemplates.general.length)];
-        const randomDesc = template.descriptions[Math.floor(Math.random() * template.descriptions.length)];
-        const randomLocation = template.locations[Math.floor(Math.random() * template.locations.length)];
-        const randomAge = template.ages[Math.floor(Math.random() * template.ages.length)];
-        const randomLife = template.lives[Math.floor(Math.random() * template.lives.length)];
+        setDamageItems(results);
+        setAnalyzing(false);
+      } catch (error) {
+        console.error('Analysis error:', error);
 
-        analyzedDamage.push({
-          id: (idCounter++).toString(),
-          category: 'Overall Assessment',
-          severity: 'minor',
-          description: randomDesc.replace('{location}', randomLocation).replace('{age}', randomAge).replace('{life}', randomLife),
-          estimatedCost: template.costs[Math.floor(Math.random() * template.costs.length)],
-          location: 'Entire roof system',
-        });
-      }
-
-      // Ensure we have at least one finding
-      if (analyzedDamage.length === 0) {
-        analyzedDamage.push({
+        // Fallback to basic findings on error
+        setDamageItems([{
           id: '1',
-          category: 'General Inspection',
+          category: 'Manual Review Required',
           severity: 'minor',
-          description: 'Initial visual inspection completed. Roof system shows normal wear patterns for age. Detailed assessment pending photo review and category assignment.',
+          description: 'AI analysis could not be completed. Please manually review the uploaded photos and add findings below. This may occur on first load as AI models download.',
           estimatedCost: 0,
-          location: 'Overall',
-        });
+          location: 'N/A',
+        }]);
+        setAnalyzing(false);
       }
+    }
 
-      setDamageItems(analyzedDamage);
-      setAnalyzing(false);
-    }, 2500);
+    runAnalysis();
   }, [photos]);
 
   const addDamageItem = () => {
@@ -255,11 +217,24 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
       {analyzing ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-slate-300 border-t-uc-blue mb-4"></div>
-          <p className="text-lg text-uc-navy dark:text-slate-300">
-            Analyzing inspection photos...
+          <p className="text-lg text-uc-navy dark:text-slate-300 font-semibold">
+            {analysisStatus}
           </p>
-          <p className="text-sm text-uc-navy/60 dark:text-slate-400 mt-2">
-            Detecting damage patterns, estimating costs, and categorizing findings
+          {analysisProgress.total > 0 && (
+            <>
+              <p className="text-sm text-uc-navy/60 dark:text-slate-400 mt-2">
+                Progress: {analysisProgress.current} / {analysisProgress.total} photos
+              </p>
+              <div className="w-64 mx-auto mt-4 bg-slate-200 dark:bg-uc-navy rounded-full h-2">
+                <div
+                  className="bg-uc-blue h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(analysisProgress.current / analysisProgress.total) * 100}%` }}
+                ></div>
+              </div>
+            </>
+          )}
+          <p className="text-xs text-uc-navy/50 dark:text-slate-500 mt-4">
+            Using AI-powered computer vision to detect roof damage
           </p>
         </div>
       ) : (
