@@ -71,13 +71,36 @@ export interface Inspection {
   updatedAt: string;
 }
 
+export interface RoofMeasurement {
+  totalSquares: number;
+  pitch: string;
+  stories: number;
+  roofType: string;
+  approximateAge: number;
+  lastReplacement?: string;
+  layers: number;
+  accessibility: 'easy' | 'moderate' | 'difficult';
+  notes?: string;
+}
+
+export interface WeatherData {
+  temperature: number;
+  condition: string;
+  windSpeed: number;
+  humidity: number;
+  precipitation: number;
+  timestamp: string;
+}
+
 export interface InspectionData {
-  customerInfo: CustomerInfo;
-  photos: PhotoFile[];
+  customerInfo?: CustomerInfo;
+  photos?: PhotoFile[];
   analysis?: DamageAnalysis;
   reportUrl?: string;
   reportFileName?: string;
   generatedDate?: string;
+  roofMeasurements?: RoofMeasurement;
+  weatherData?: WeatherData;
 }
 
 // Validation error type

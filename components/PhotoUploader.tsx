@@ -2,11 +2,17 @@
 
 import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import PhotoLightbox from './PhotoLightbox';
+import PhotoAnnotator, { Annotation } from './PhotoAnnotator';
+import RoofMeasurements from './RoofMeasurements';
+import { getWeatherData, getWeatherIcon } from '@/lib/weatherService';
 import {
   CustomerInfo,
   PhotoFile,
   PhotoCategory,
   InspectionData,
+  RoofMeasurement,
+  WeatherData,
 } from '@/lib/types';
 import {
   validateCustomerInfo,
@@ -20,7 +26,7 @@ interface PhotoUploaderProps {
 }
 
 export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
-  const [photos, setPhotos] = useState<PhotoFile[]>([]);
+  const [photos, setPhotos] = useState<(PhotoFile & { annotations?: string; annotationsData?: Annotation[] })[]>([]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: '',
     address: '',
@@ -30,6 +36,12 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
     claimNumber: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [annotatingIndex, setAnnotatingIndex] = useState<number | null>(null);
+  const [showMeasurements, setShowMeasurements] = useState(false);
+  const [roofMeasurements, setRoofMeasurements] = useState<RoofMeasurement | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [loadingWeather, setLoadingWeather] = useState(false);
 
   // Cleanup URLs on unmount to prevent memory leaks
   useEffect(() => {
@@ -111,6 +123,47 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
     }
   };
 
+  const handleFetchWeather = async () => {
+    if (!customerInfo.address) {
+      showToast('Please enter property address first', 'error');
+      return;
+    }
+    setLoadingWeather(true);
+    const weather = await getWeatherData(customerInfo.address);
+    if (weather) {
+      setWeatherData(weather);
+      showToast('Weather data captured', 'success');
+    } else {
+      showToast('Could not fetch weather data', 'error');
+    }
+    setLoadingWeather(false);
+  };
+
+  const handleAnnotationSave = (dataUrl: string, annotations: Annotation[]) => {
+    if (annotatingIndex === null) return;
+    setPhotos((prev) => {
+      const newPhotos = [...prev];
+      newPhotos[annotatingIndex] = {
+        ...newPhotos[annotatingIndex],
+        annotations: dataUrl,
+        annotationsData: annotations,
+      };
+      return newPhotos;
+    });
+    setAnnotatingIndex(null);
+    showToast('Annotations saved', 'success');
+  };
+
+  const handleExportPhotos = () => {
+    photos.forEach((photo, index) => {
+      const link = document.createElement('a');
+      link.href = photo.annotations || photo.preview;
+      link.download = `inspection-photo-${index + 1}.png`;
+      link.click();
+    });
+    showToast('Photos exported', 'success');
+  };
+
   const handleSubmit = () => {
     // Validate photos
     if (photos.length === 0) {
@@ -132,7 +185,12 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
 
     // Clear errors and proceed
     setErrors({});
-    onNext({ photos, customerInfo });
+    onNext({
+      photos,
+      customerInfo,
+      roofMeasurements: roofMeasurements || undefined,
+      weatherData: weatherData || undefined
+    });
   };
 
   return (
@@ -238,6 +296,55 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
         </div>
       </div>
 
+      {/* Weather & Roof Measurements */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="border border-slate-300 dark:border-uc-blue/30 rounded-lg p-4">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="font-semibold text-uc-navy dark:text-white">Weather Conditions</h4>
+            <button
+              onClick={handleFetchWeather}
+              disabled={loadingWeather || !customerInfo.address}
+              className="px-3 py-1 text-sm bg-uc-blue hover:bg-uc-blue-dark text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loadingWeather ? 'Loading...' : 'Capture Weather'}
+            </button>
+          </div>
+          {weatherData ? (
+            <div className="space-y-2 text-sm text-uc-navy dark:text-slate-300">
+              <p className="flex items-center gap-2">
+                <span className="text-2xl">{getWeatherIcon(weatherData.condition)}</span>
+                <span className="font-medium">{weatherData.temperature}°F - {weatherData.condition}</span>
+              </p>
+              <p>Wind: {weatherData.windSpeed} mph | Humidity: {weatherData.humidity}%</p>
+              {weatherData.precipitation > 0 && <p>Precipitation: {weatherData.precipitation} in</p>}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 dark:text-slate-400">No weather data captured</p>
+          )}
+        </div>
+
+        <div className="border border-slate-300 dark:border-uc-blue/30 rounded-lg p-4">
+          <div className="flex justify-between items-center mb-2">
+            <h4 className="font-semibold text-uc-navy dark:text-white">Roof Measurements</h4>
+            <button
+              onClick={() => setShowMeasurements(true)}
+              className="px-3 py-1 text-sm bg-uc-blue hover:bg-uc-blue-dark text-white rounded-lg transition-colors"
+            >
+              {roofMeasurements ? 'Edit' : 'Add'} Measurements
+            </button>
+          </div>
+          {roofMeasurements ? (
+            <div className="space-y-1 text-sm text-uc-navy dark:text-slate-300">
+              <p><span className="font-medium">{roofMeasurements.totalSquares}</span> squares ({Math.round(roofMeasurements.totalSquares * 100)} sq ft)</p>
+              <p>Pitch: {roofMeasurements.pitch} | Type: {roofMeasurements.roofType}</p>
+              <p>Age: ~{roofMeasurements.approximateAge} years | {roofMeasurements.stories} {roofMeasurements.stories === 1 ? 'story' : 'stories'}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 dark:text-slate-400">No measurements added</p>
+          )}
+        </div>
+      </div>
+
       {/* Photo Upload Area */}
       <div
         {...getRootProps()}
@@ -274,36 +381,67 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
       {/* Photo Gallery */}
       {photos.length > 0 && (
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4 text-uc-navy dark:text-slate-200">
-            Uploaded Photos ({photos.length})
-          </h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-uc-navy dark:text-slate-200">
+              Uploaded Photos ({photos.length})
+            </h3>
+            <button
+              onClick={handleExportPhotos}
+              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-uc-navy dark:hover:bg-uc-navy-light text-uc-navy dark:text-white rounded-lg transition-colors text-sm font-medium"
+            >
+              Export All Photos
+            </button>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {photos.map((photo, index) => (
               <div key={index} className="relative group">
-                <img
-                  src={photo.preview}
-                  alt={`Inspection ${index + 1}`}
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-                <button
-                  onClick={() => removePhoto(index)}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Remove photo"
+                <div
+                  className="relative cursor-pointer"
+                  onClick={() => setLightboxIndex(index)}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                  <img
+                    src={photo.annotations || photo.preview}
+                    alt={`Inspection ${index + 1}`}
+                    className="w-full h-48 object-cover rounded-lg"
+                  />
+                  {photo.annotations && (
+                    <div className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                      Annotated
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="mt-2 flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAnnotatingIndex(index);
+                    }}
+                    className="flex-1 px-2 py-1 text-xs bg-uc-blue hover:bg-uc-blue-dark text-white rounded transition-colors"
+                    title="Annotate Photo"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                    <svg className="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removePhoto(index);
+                    }}
+                    className="px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                    aria-label="Remove photo"
+                    title="Remove Photo"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
                 <select
                   value={photo.category}
                   onChange={(e) => updatePhotoCategory(index, e.target.value as PhotoCategory)}
@@ -333,6 +471,43 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
           Next: Analyze Damage
         </button>
       </div>
+
+      {/* Modals */}
+      {lightboxIndex !== null && (
+        <PhotoLightbox
+          photos={photos}
+          initialIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onAnnotate={(index) => {
+            setLightboxIndex(null);
+            setAnnotatingIndex(index);
+          }}
+        />
+      )}
+
+      {annotatingIndex !== null && (
+        <PhotoAnnotator
+          imageUrl={photos[annotatingIndex].preview}
+          onSave={handleAnnotationSave}
+          onClose={() => setAnnotatingIndex(null)}
+          initialAnnotations={photos[annotatingIndex].annotationsData}
+        />
+      )}
+
+      {showMeasurements && (
+        <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+          <div className="max-w-4xl w-full max-h-[90vh] overflow-auto">
+            <RoofMeasurements
+              onSave={(measurements) => {
+                setRoofMeasurements(measurements);
+                setShowMeasurements(false);
+                showToast('Roof measurements saved', 'success');
+              }}
+              initialData={roofMeasurements || undefined}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

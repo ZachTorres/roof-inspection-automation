@@ -2,26 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { format, addDays, differenceInDays } from 'date-fns';
+import { InspectionData, FollowUp, FollowUpType, ClaimStatus } from '@/lib/types';
+import { showToast } from '@/lib/toast';
 
 interface ClaimTrackerProps {
-  inspection: any;
+  inspection: Partial<InspectionData>;
   onBack: () => void;
   onNewInspection: () => void;
 }
 
-interface FollowUp {
-  id: string;
-  type: 'adjuster' | 'mortgage' | 'homeowner';
-  dueDate: string;
-  status: 'pending' | 'completed';
-  notes: string;
-}
-
 export default function ClaimTracker({ inspection, onBack, onNewInspection }: ClaimTrackerProps) {
-  const [claimStatus, setClaimStatus] = useState('submitted');
+  const [claimStatus, setClaimStatus] = useState<ClaimStatus>('submitted');
   const [followUps, setFollowUps] = useState<FollowUp[]>([]);
-  const [newFollowUp, setNewFollowUp] = useState({
-    type: 'adjuster' as const,
+  const [newFollowUp, setNewFollowUp] = useState<{
+    type: FollowUpType;
+    dueDate: string;
+    notes: string;
+  }>({
+    type: 'adjuster',
     dueDate: format(addDays(new Date(), 3), 'yyyy-MM-dd'),
     notes: '',
   });
@@ -49,7 +47,7 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
 
   const addFollowUp = () => {
     if (!newFollowUp.notes) {
-      alert('Please add follow-up notes');
+      showToast('Please add follow-up notes', 'error');
       return;
     }
 
@@ -65,20 +63,23 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
       dueDate: format(addDays(new Date(), 3), 'yyyy-MM-dd'),
       notes: '',
     });
+    showToast('Follow-up task added', 'success');
   };
 
   const toggleFollowUpStatus = (id: string) => {
     setFollowUps(
       followUps.map((f) =>
         f.id === id
-          ? { ...f, status: f.status === 'pending' ? 'completed' : 'pending' }
+          ? { ...f, status: f.status === 'pending' ? 'completed' : 'pending' as const }
           : f
       )
     );
+    showToast('Status updated', 'info');
   };
 
   const deleteFollowUp = (id: string) => {
     setFollowUps(followUps.filter((f) => f.id !== id));
+    showToast('Follow-up removed', 'info');
   };
 
   const getFollowUpColor = (followUp: FollowUp) => {
@@ -116,19 +117,19 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
         <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-4 border border-uc-blue/20">
           <p className="text-sm text-uc-navy/70 dark:text-slate-400 mb-1">Customer</p>
           <p className="font-semibold text-uc-navy dark:text-white">
-            {inspection.customerInfo.name}
+            {inspection.customerInfo?.name || 'N/A'}
           </p>
         </div>
         <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-4 border border-uc-blue/20">
           <p className="text-sm text-uc-navy/70 dark:text-slate-400 mb-1">Claim Number</p>
           <p className="font-semibold text-uc-navy dark:text-white">
-            {inspection.customerInfo.claimNumber || 'N/A'}
+            {inspection.customerInfo?.claimNumber || 'N/A'}
           </p>
         </div>
         <div className="bg-slate-50 dark:bg-uc-navy rounded-lg p-4 border border-uc-blue/20">
           <p className="text-sm text-uc-navy/70 dark:text-slate-400 mb-1">Total Amount</p>
           <p className="font-semibold text-green-600 dark:text-green-400">
-            ${inspection.analysis.totalEstimate.toLocaleString()}
+            ${inspection.analysis?.totalEstimate?.toLocaleString() || '0'}
           </p>
         </div>
       </div>
@@ -141,7 +142,7 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
         <div className="flex items-center gap-4">
           <select
             value={claimStatus}
-            onChange={(e) => setClaimStatus(e.target.value)}
+            onChange={(e) => setClaimStatus(e.target.value as ClaimStatus)}
             className={`px-4 py-2 rounded-lg font-semibold ${getStatusBadge(claimStatus)}`}
           >
             <option value="submitted">Submitted</option>
@@ -255,7 +256,7 @@ export default function ClaimTracker({ inspection, onBack, onNewInspection }: Cl
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <select
             value={newFollowUp.type}
-            onChange={(e) => setNewFollowUp({ ...newFollowUp, type: e.target.value as any })}
+            onChange={(e) => setNewFollowUp({ ...newFollowUp, type: e.target.value as FollowUpType })}
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy-dark dark:border-uc-blue/30 dark:text-white"
           >
             <option value="adjuster">Insurance Adjuster</option>

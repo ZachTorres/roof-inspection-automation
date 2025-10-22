@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import { format } from 'date-fns';
+import { InspectionData, ReportData } from '@/lib/types';
+import { showToast } from '@/lib/toast';
 
 interface ReportGeneratorProps {
-  inspectionData: any;
-  onNext: (reportData: any) => void;
+  inspectionData: InspectionData;
+  onNext: (reportData: ReportData) => void;
   onBack: () => void;
 }
 
@@ -14,6 +16,15 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
   const [generating, setGenerating] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
   const [reportUrl, setReportUrl] = useState('');
+
+  // Cleanup URL on unmount to prevent memory leak
+  useEffect(() => {
+    return () => {
+      if (reportUrl) {
+        URL.revokeObjectURL(reportUrl);
+      }
+    };
+  }, [reportUrl]);
 
   const generatePDF = async () => {
     setGenerating(true);
@@ -40,16 +51,16 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
       yPos += 8;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Name: ${customerInfo.name}`, 20, yPos);
+      doc.text(`Name: ${customerInfo?.name || 'N/A'}`, 20, yPos);
       yPos += 6;
-      doc.text(`Address: ${customerInfo.address}`, 20, yPos);
+      doc.text(`Address: ${customerInfo?.address || 'N/A'}`, 20, yPos);
       yPos += 6;
-      doc.text(`Phone: ${customerInfo.phone}`, 20, yPos);
+      doc.text(`Phone: ${customerInfo?.phone || 'N/A'}`, 20, yPos);
       yPos += 6;
-      doc.text(`Email: ${customerInfo.email}`, 20, yPos);
+      doc.text(`Email: ${customerInfo?.email || 'N/A'}`, 20, yPos);
       yPos += 6;
-      doc.text(`Inspection Date: ${customerInfo.inspectionDate}`, 20, yPos);
-      if (customerInfo.claimNumber) {
+      doc.text(`Inspection Date: ${customerInfo?.inspectionDate || 'N/A'}`, 20, yPos);
+      if (customerInfo?.claimNumber) {
         yPos += 6;
         doc.text(`Claim Number: ${customerInfo.claimNumber}`, 20, yPos);
       }
@@ -63,11 +74,11 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
       yPos += 8;
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Total Findings: ${analysis.damageItems.length}`, 20, yPos);
+      doc.text(`Total Findings: ${analysis?.damageItems?.length || 0}`, 20, yPos);
       yPos += 6;
-      doc.text(`Total Estimated Cost: $${analysis.totalEstimate.toLocaleString()}`, 20, yPos);
+      doc.text(`Total Estimated Cost: $${analysis?.totalEstimate?.toLocaleString() || '0'}`, 20, yPos);
       yPos += 6;
-      doc.text(`Photos Documented: ${photos.length}`, 20, yPos);
+      doc.text(`Photos Documented: ${photos?.length || 0}`, 20, yPos);
 
       // Damage Findings
       yPos += 15;
@@ -75,7 +86,7 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
       doc.setFont('helvetica', 'bold');
       doc.text('DAMAGE FINDINGS', 20, yPos);
 
-      analysis.damageItems.forEach((item: any, index: number) => {
+      analysis?.damageItems?.forEach((item: any, index: number) => {
         // Check if we need a new page
         if (yPos > 250) {
           doc.addPage();
@@ -160,14 +171,16 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
       const reportData = {
         reportUrl: url,
         generatedDate: new Date().toISOString(),
-        reportFileName: `roof-inspection-${customerInfo.name.replace(/\s+/g, '-')}-${Date.now()}.pdf`,
+        reportFileName: `roof-inspection-${customerInfo?.name?.replace(/\s+/g, '-') || 'report'}-${Date.now()}.pdf`,
       };
 
+      showToast('PDF report generated successfully', 'success');
       return reportData;
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error generating report. Please try again.');
+      showToast('Error generating report. Please try again.', 'error');
       setGenerating(false);
+      return null;
     }
   };
 
@@ -181,7 +194,7 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
   const downloadPDF = () => {
     const link = document.createElement('a');
     link.href = reportUrl;
-    link.download = `roof-inspection-${inspectionData.customerInfo.name.replace(/\s+/g, '-')}.pdf`;
+    link.download = `roof-inspection-${inspectionData.customerInfo?.name?.replace(/\s+/g, '-') || 'report'}.pdf`;
     link.click();
   };
 
@@ -209,13 +222,13 @@ export default function ReportGenerator({ inspectionData, onNext, onBack }: Repo
                 <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                Comprehensive damage findings ({inspectionData.analysis.damageItems.length} items)
+                Comprehensive damage findings ({inspectionData.analysis?.damageItems?.length || 0} items)
               </li>
               <li className="flex items-center">
                 <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                Detailed cost estimates (${inspectionData.analysis.totalEstimate.toLocaleString()})
+                Detailed cost estimates (${inspectionData.analysis?.totalEstimate?.toLocaleString() || '0'})
               </li>
               <li className="flex items-center">
                 <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">

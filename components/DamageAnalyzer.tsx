@@ -2,129 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { analyzeRoofPhotos } from '@/lib/roofAnalyzer';
+import { DamageItem, DamageAnalysis, PhotoFile } from '@/lib/types';
+import { showToast } from '@/lib/toast';
+import { validateCost } from '@/lib/validation';
 
 interface DamageAnalyzerProps {
-  photos: any[];
-  onNext: (analysis: any) => void;
+  photos: PhotoFile[];
+  onNext: (analysis: DamageAnalysis) => void;
   onBack: () => void;
 }
 
-interface DamageItem {
-  id: string;
-  category: string;
-  severity: 'minor' | 'moderate' | 'severe';
-  description: string;
-  estimatedCost: number;
-  location: string;
-}
-
-// Realistic damage templates based on photo category
-const damageTemplates = {
-  shingles: [
-    {
-      category: 'Asphalt Shingles',
-      severity: 'moderate' as const,
-      descriptions: [
-        'Multiple missing shingles detected on {location} slope. Wind damage evident with lifted tab edges and granule loss indicating age-related wear.',
-        'Curling and buckling shingles observed on {location}. Thermal cycling has compromised shingle integrity, exposing underlying felt paper.',
-        'Hail damage impact marks visible across {location}. Granule displacement and bruising patterns consistent with recent storm activity.',
-      ],
-      costs: [1800, 2200, 2500, 2800],
-      locations: ['north-facing', 'south-facing', 'east-facing', 'west-facing', 'front', 'rear'],
-    },
-    {
-      category: 'Shingle Deterioration',
-      severity: 'minor' as const,
-      descriptions: [
-        'Granule loss detected on {location} exposing asphalt layer. UV degradation accelerating aging process, recommend monitoring.',
-        'Minor lifting of shingle edges on {location} creating potential water infiltration points during heavy rain events.',
-        'Isolated shingle cracking observed due to thermal expansion cycles. No immediate structural concern but warrants attention.',
-      ],
-      costs: [650, 850, 950],
-      locations: ['ridge line', 'hip sections', 'valley areas', 'transition points'],
-    },
-  ],
-  flashing: [
-    {
-      category: 'Metal Flashing',
-      severity: 'moderate' as const,
-      descriptions: [
-        'Step flashing separation detected at {location} interface. Sealant failure allowing water penetration risk behind siding.',
-        'Chimney counter-flashing deterioration with rust-through sections. Immediate attention required to prevent interior water damage.',
-        'Valley flashing showing corrosion and improper overlap. High-flow water areas experiencing accelerated wear patterns.',
-      ],
-      costs: [1200, 1450, 1650],
-      locations: ['chimney', 'wall-to-roof', 'dormer', 'skylight'],
-    },
-  ],
-  gutters: [
-    {
-      category: 'Gutter System',
-      severity: 'minor' as const,
-      descriptions: [
-        'Gutter sections exhibiting seam separation at {location}. Thermal expansion/contraction causing joint failure and overflow potential.',
-        'Debris accumulation in gutter runs creating water backup. Recommending professional cleaning and installation of gutter guards.',
-        'Downspout disconnect at {location} causing foundation exposure. Improper water routing may lead to basement moisture issues.',
-      ],
-      costs: [380, 520, 680],
-      locations: ['east elevation', 'west elevation', 'front fascia', 'rear section'],
-    },
-  ],
-  vents: [
-    {
-      category: 'Roof Ventilation',
-      severity: 'moderate' as const,
-      descriptions: [
-        'Ridge vent installation showing gaps and improper sealing. Compromised attic ventilation affecting energy efficiency and moisture control.',
-        'Turbine vent bearing failure causing rotation issues. Inadequate exhaust ventilation may lead to premature roof system failure.',
-        'Soffit vent blockage reducing intake airflow. Imbalanced ventilation system contributing to heat and moisture buildup in attic space.',
-      ],
-      costs: [750, 900, 1100],
-      locations: ['ridge system', 'roof penetrations', 'soffit areas'],
-    },
-  ],
-  chimney: [
-    {
-      category: 'Chimney Structure',
-      severity: 'severe' as const,
-      descriptions: [
-        'Chimney cap missing exposing flue opening. Direct water entry and animal access risk. Mortar crown showing significant weathering cracks.',
-        'Masonry spalling and efflorescence on {location} face. Freeze-thaw cycles causing brick deterioration requiring tuckpointing repairs.',
-        'Chimney flashing boot deterioration with active leak signs. Water staining on interior ceiling indicates ongoing moisture intrusion.',
-      ],
-      costs: [1850, 2200, 2650],
-      locations: ['north', 'south', 'east', 'west'],
-    },
-  ],
-  damage: [
-    {
-      category: 'Storm Damage',
-      severity: 'severe' as const,
-      descriptions: [
-        'Impact damage from fallen limb on {location}. Penetration through roof deck visible, requires immediate temporary protection and structural assessment.',
-        'Wind uplift damage affecting {location} field. Multiple shingles displaced and felt paper compromised. Emergency repairs recommended.',
-        'Hail strike patterns across {location} consistent with recent severe weather. Functional damage present warranting full replacement consideration.',
-      ],
-      costs: [3200, 3800, 4500],
-      locations: ['main roof section', 'secondary roof area', 'primary slope', 'garage roof'],
-    },
-  ],
-  general: [
-    {
-      category: 'Overall Assessment',
-      severity: 'minor' as const,
-      descriptions: [
-        'Roof system age estimated at {age} years based on material condition and installation techniques. Remaining serviceable life approximately {life} years with proper maintenance.',
-        'General wear patterns consistent with local climate exposure. No immediate concerns but recommend annual inspections and preventive maintenance program.',
-        'Moss and algae growth on {location} indicating moisture retention. Cosmetic issue currently but may accelerate material degradation if left untreated.',
-      ],
-      costs: [0, 0, 650],
-      locations: ['shaded areas', 'north-facing slopes', 'low-slope sections'],
-      ages: ['12-15', '15-18', '18-20', '20-25'],
-      lives: ['3-5', '5-7', '7-10'],
-    },
-  ],
-};
+// Template data removed - now using actual AI analysis from roofAnalyzer
 
 export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyzerProps) {
   const [analyzing, setAnalyzing] = useState(true);
@@ -135,7 +23,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
   useEffect(() => {
     async function runAnalysis() {
       try {
-        setAnalysisStatus('Loading AI models (first time may take 30-60 seconds)...');
+        setAnalysisStatus('Loading TensorFlow.js AI models (first load: 30-60s)...');
         setAnalysisProgress({ current: 0, total: photos.length });
 
         // Prepare photos for analysis
@@ -149,12 +37,13 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
           photosForAnalysis,
           (current, total) => {
             setAnalysisProgress({ current, total });
-            setAnalysisStatus(`Analyzing photo ${current} of ${total}...`);
+            setAnalysisStatus(`Analyzing photo ${current} of ${total} with computer vision...`);
           }
         );
 
         setDamageItems(results);
         setAnalyzing(false);
+        showToast(`AI analysis complete: ${results.length} findings detected`, 'success');
       } catch (error) {
         console.error('Analysis error:', error);
 
@@ -168,6 +57,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
           location: 'N/A',
         }]);
         setAnalyzing(false);
+        showToast('AI analysis failed. Please add findings manually.', 'warning');
       }
     }
 
@@ -184,34 +74,59 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
       location: '',
     };
     setDamageItems([...damageItems, newItem]);
+    showToast('New finding added', 'info');
   };
 
-  const updateDamageItem = (id: string, field: keyof DamageItem, value: any) => {
+  const updateDamageItem = (id: string, field: keyof DamageItem, value: string | number) => {
     setDamageItems(
-      damageItems.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item
-      )
+      damageItems.map((item) => {
+        if (item.id === id) {
+          // Validate cost
+          if (field === 'estimatedCost') {
+            const cost = typeof value === 'number' ? value : parseFloat(value as string) || 0;
+            if (!validateCost(cost)) {
+              showToast('Invalid cost amount', 'error');
+              return item;
+            }
+            return { ...item, [field]: cost };
+          }
+          return { ...item, [field]: value };
+        }
+        return item;
+      })
     );
   };
 
   const removeDamageItem = (id: string) => {
     setDamageItems(damageItems.filter((item) => item.id !== id));
+    showToast('Finding removed', 'info');
   };
 
   const totalEstimate = damageItems.reduce((sum, item) => sum + item.estimatedCost, 0);
 
   const handleNext = () => {
     if (damageItems.length === 0) {
-      alert('Please add at least one damage finding');
+      showToast('Please add at least one damage finding', 'error');
       return;
     }
+
+    // Validate all damage items
+    const invalidItems = damageItems.filter(
+      item => !item.category || !item.description || !item.location
+    );
+
+    if (invalidItems.length > 0) {
+      showToast('Please fill in all required fields for each finding', 'error');
+      return;
+    }
+
     onNext({ damageItems, totalEstimate });
   };
 
   return (
     <div className="bg-white dark:bg-uc-navy-light rounded-lg shadow-xl p-8 border border-uc-blue/10">
       <h2 className="text-2xl font-bold mb-6 text-uc-navy dark:text-white">
-        Step 2: Damage Analysis
+        Step 2: AI-Powered Damage Analysis
       </h2>
 
       {analyzing ? (
@@ -234,7 +149,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
             </>
           )}
           <p className="text-xs text-uc-navy/50 dark:text-slate-500 mt-4">
-            Using AI-powered computer vision to detect roof damage
+            Using TensorFlow.js computer vision to detect roof damage
           </p>
         </div>
       ) : (
@@ -256,7 +171,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
               </div>
               <div>
                 <p className="text-sm text-uc-navy/70 dark:text-slate-400">Severity Breakdown</p>
-                <div className="flex gap-2 mt-1">
+                <div className="flex gap-2 mt-1 flex-wrap">
                   <span className="px-2 py-1 text-xs bg-yellow-200 text-yellow-800 rounded">
                     {damageItems.filter((i) => i.severity === 'minor').length} Minor
                   </span>
@@ -285,6 +200,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                   <button
                     onClick={() => removeDamageItem(item.id)}
                     className="text-red-500 hover:text-red-700"
+                    aria-label="Remove finding"
                   >
                     <svg
                       className="w-5 h-5"
@@ -304,7 +220,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <input
                     type="text"
-                    placeholder="Category"
+                    placeholder="Category *"
                     value={item.category}
                     onChange={(e) =>
                       updateDamageItem(item.id, 'category', e.target.value)
@@ -324,7 +240,7 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                   </select>
                   <input
                     type="text"
-                    placeholder="Location"
+                    placeholder="Location *"
                     value={item.location}
                     onChange={(e) =>
                       updateDamageItem(item.id, 'location', e.target.value)
@@ -333,15 +249,17 @@ export default function DamageAnalyzer({ photos, onNext, onBack }: DamageAnalyze
                   />
                   <input
                     type="number"
-                    placeholder="Estimated Cost"
+                    placeholder="Estimated Cost *"
                     value={item.estimatedCost}
                     onChange={(e) =>
-                      updateDamageItem(item.id, 'estimatedCost', parseFloat(e.target.value) || 0)
+                      updateDamageItem(item.id, 'estimatedCost', e.target.value)
                     }
                     className="px-3 py-2 border border-slate-300 rounded focus:ring-2 focus:ring-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
+                    min="0"
+                    max="1000000"
                   />
                   <textarea
-                    placeholder="Description"
+                    placeholder="Description *"
                     value={item.description}
                     onChange={(e) =>
                       updateDamageItem(item.id, 'description', e.target.value)

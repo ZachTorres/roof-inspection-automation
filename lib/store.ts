@@ -1,27 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface Inspection {
-  id: string;
-  customerInfo: {
-    name: string;
-    address: string;
-    phone: string;
-    email: string;
-    inspectionDate: string;
-    claimNumber: string;
-  };
-  analysis: {
-    damageItems: any[];
-    totalEstimate: number;
-  };
-  reportUrl?: string;
-  reportFileName?: string;
-  generatedDate?: string;
-  claimStatus: string;
-  followUps: any[];
-  createdAt: string;
-}
+import { Inspection } from './types';
 
 interface StoreState {
   inspections: Inspection[];
