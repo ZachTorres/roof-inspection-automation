@@ -1,21 +1,27 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import {
+  CustomerInfo,
+  PhotoFile,
+  PhotoCategory,
+  InspectionData,
+} from '@/lib/types';
+import {
+  validateCustomerInfo,
+  validateImageFile,
+  formatPhone,
+} from '@/lib/validation';
+import { showToast } from '@/lib/toast';
 
 interface PhotoUploaderProps {
-  onNext: (data: any) => void;
-}
-
-interface PhotoFile {
-  file: File;
-  preview: string;
-  category: string;
+  onNext: (data: InspectionData) => void;
 }
 
 export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
   const [photos, setPhotos] = useState<PhotoFile[]>([]);
-  const [customerInfo, setCustomerInfo] = useState({
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     name: '',
     address: '',
     phone: '',
@@ -23,14 +29,48 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
     inspectionDate: new Date().toISOString().split('T')[0],
     claimNumber: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newPhotos = acceptedFiles.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      category: 'general',
-    }));
-    setPhotos((prev) => [...prev, ...newPhotos]);
+  // Cleanup URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      photos.forEach(photo => {
+        URL.revokeObjectURL(photo.preview);
+      });
+    };
+  }, [photos]);
+
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+    // Handle rejected files
+    if (rejectedFiles.length > 0) {
+      showToast('Some files were rejected. Please check file types and sizes.', 'error');
+    }
+
+    // Validate and add accepted files
+    const validPhotos: PhotoFile[] = [];
+    const invalidFiles: string[] = [];
+
+    acceptedFiles.forEach((file) => {
+      const validation = validateImageFile(file);
+      if (validation) {
+        invalidFiles.push(`${file.name}: ${validation.message}`);
+      } else {
+        validPhotos.push({
+          file,
+          preview: URL.createObjectURL(file),
+          category: 'general',
+        });
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      showToast(invalidFiles.join(', '), 'error');
+    }
+
+    if (validPhotos.length > 0) {
+      setPhotos((prev) => [...prev, ...validPhotos]);
+      showToast(`${validPhotos.length} photo(s) uploaded successfully`, 'success');
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -38,6 +78,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
     },
+    maxSize: 10 * 1024 * 1024, // 10MB
   });
 
   const removePhoto = (index: number) => {
@@ -47,25 +88,50 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
       newPhotos.splice(index, 1);
       return newPhotos;
     });
+    showToast('Photo removed', 'info');
   };
 
-  const updatePhotoCategory = (index: number, category: string) => {
+  const updatePhotoCategory = (index: number, category: PhotoCategory) => {
     setPhotos((prev) => {
       const newPhotos = [...prev];
-      newPhotos[index].category = category;
+      newPhotos[index] = { ...newPhotos[index], category };
       return newPhotos;
     });
   };
 
+  const handlePhoneChange = (value: string) => {
+    setCustomerInfo({ ...customerInfo, phone: value });
+    setErrors({ ...errors, phone: '' });
+  };
+
+  const handlePhoneBlur = () => {
+    if (customerInfo.phone) {
+      const formatted = formatPhone(customerInfo.phone);
+      setCustomerInfo({ ...customerInfo, phone: formatted });
+    }
+  };
+
   const handleSubmit = () => {
+    // Validate photos
     if (photos.length === 0) {
-      alert('Please upload at least one photo');
+      showToast('Please upload at least one photo', 'error');
       return;
     }
-    if (!customerInfo.name || !customerInfo.address) {
-      alert('Please fill in customer name and address');
+
+    // Validate customer info
+    const validationErrors = validateCustomerInfo(customerInfo);
+    if (validationErrors.length > 0) {
+      const errorMap: Record<string, string> = {};
+      validationErrors.forEach((err) => {
+        errorMap[err.field] = err.message;
+      });
+      setErrors(errorMap);
+      showToast('Please fix the form errors before proceeding', 'error');
       return;
     }
+
+    // Clear errors and proceed
+    setErrors({});
     onNext({ photos, customerInfo });
   };
 
@@ -81,42 +147,76 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
           Customer Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            placeholder="Customer Name *"
-            value={customerInfo.name}
-            onChange={(e) =>
-              setCustomerInfo({ ...customerInfo, name: e.target.value })
-            }
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
-          />
-          <input
-            type="text"
-            placeholder="Property Address *"
-            value={customerInfo.address}
-            onChange={(e) =>
-              setCustomerInfo({ ...customerInfo, address: e.target.value })
-            }
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
-          />
-          <input
-            type="tel"
-            placeholder="Phone Number"
-            value={customerInfo.phone}
-            onChange={(e) =>
-              setCustomerInfo({ ...customerInfo, phone: e.target.value })
-            }
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={customerInfo.email}
-            onChange={(e) =>
-              setCustomerInfo({ ...customerInfo, email: e.target.value })
-            }
-            className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
-          />
+          <div>
+            <input
+              type="text"
+              placeholder="Customer Name *"
+              value={customerInfo.name}
+              onChange={(e) => {
+                setCustomerInfo({ ...customerInfo, name: e.target.value });
+                setErrors({ ...errors, name: '' });
+              }}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white ${
+                errors.name ? 'border-red-500' : 'border-slate-300'
+              }`}
+            />
+            {errors.name && (
+              <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+            )}
+          </div>
+
+          <div>
+            <input
+              type="text"
+              placeholder="Property Address *"
+              value={customerInfo.address}
+              onChange={(e) => {
+                setCustomerInfo({ ...customerInfo, address: e.target.value });
+                setErrors({ ...errors, address: '' });
+              }}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white ${
+                errors.address ? 'border-red-500' : 'border-slate-300'
+              }`}
+            />
+            {errors.address && (
+              <p className="mt-1 text-sm text-red-500">{errors.address}</p>
+            )}
+          </div>
+
+          <div>
+            <input
+              type="tel"
+              placeholder="Phone Number"
+              value={customerInfo.phone}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              onBlur={handlePhoneBlur}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white ${
+                errors.phone ? 'border-red-500' : 'border-slate-300'
+              }`}
+            />
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+            )}
+          </div>
+
+          <div>
+            <input
+              type="email"
+              placeholder="Email"
+              value={customerInfo.email}
+              onChange={(e) => {
+                setCustomerInfo({ ...customerInfo, email: e.target.value });
+                setErrors({ ...errors, email: '' });
+              }}
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white ${
+                errors.email ? 'border-red-500' : 'border-slate-300'
+              }`}
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+            )}
+          </div>
+
           <input
             type="date"
             value={customerInfo.inspectionDate}
@@ -125,6 +225,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             }
             className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-uc-blue focus:border-uc-blue dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white"
           />
+
           <input
             type="text"
             placeholder="Insurance Claim Number"
@@ -166,7 +267,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
             : 'Drag & drop inspection photos, or click to select'}
         </p>
         <p className="mt-2 text-sm text-uc-navy/60 dark:text-slate-400">
-          Supports: JPG, PNG, WEBP
+          Supports: JPG, PNG, WEBP (Max 10MB per file)
         </p>
       </div>
 
@@ -187,6 +288,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
                 <button
                   onClick={() => removePhoto(index)}
                   className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Remove photo"
                 >
                   <svg
                     className="w-4 h-4"
@@ -204,7 +306,7 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
                 </button>
                 <select
                   value={photo.category}
-                  onChange={(e) => updatePhotoCategory(index, e.target.value)}
+                  onChange={(e) => updatePhotoCategory(index, e.target.value as PhotoCategory)}
                   className="mt-2 w-full px-2 py-1 text-sm border border-slate-300 rounded dark:bg-uc-navy dark:border-uc-blue/30 dark:text-white focus:ring-2 focus:ring-uc-blue"
                 >
                   <option value="general">General</option>
@@ -225,7 +327,8 @@ export default function PhotoUploader({ onNext }: PhotoUploaderProps) {
       <div className="mt-8 flex justify-end">
         <button
           onClick={handleSubmit}
-          className="bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl"
+          className="bg-uc-blue hover:bg-uc-blue-dark text-white font-semibold px-8 py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={photos.length === 0}
         >
           Next: Analyze Damage
         </button>
